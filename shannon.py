@@ -7,27 +7,27 @@ class ShannonCoding:
         return [(c, src.count(c) / len(src)) for c in set(src)]
     def _codeword_length(self, p: float) -> int: return math.ceil(-1 * math.log2(p))
     def _increment_bin_str(self, s: str) -> str: return "{0:b}".format(int(s, 2) + 1)
-    def _encode_symbols(self, lengths: list[tuple[str,int]]) -> list[tuple[str, str]]:
+    def _encode_symbols(self, lengths: list[tuple[str,int]]) -> dict[str,str]:
         prev = "-1"
-        return [(c, prev := self._increment_bin_str(prev).ljust(l,'0')) for i, (c,l) in enumerate(lengths)]
-    def encode(self, src: str) -> str:
+        result = {}
+        for c,l in lengths:
+            prev = self._increment_bin_str(prev).ljust(l,'0')
+            result[c] = prev
+        return result
+    def _bits_to_bytes(self, bitstr: str) -> bytes:
+        padded = bitstr + '0' * ((8 - len(bitstr) % 8) % 8)
+        return int(padded, 2).to_bytes(len(padded) // 8, byteorder='big')
+    def _encode(self, src: str, encodings: dict[str,str]) -> bytes:
+        return self._bits_to_bytes("".join([encodings[c] for c in src]))
+    def encode(self, src: str) -> tuple[bytes,dict[str, str]]:
         probs = sorted(self._compute_probs(src), key=lambda x: x[1], reverse=True)
         lengths = [(c, self._codeword_length(p)) for c,p in probs]
-        print(lengths)
-        print(self._encode_symbols(lengths))
-        return src
-
+        encodings = self._encode_symbols(lengths)
+        return (self._encode(src, encodings), encodings)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("usage: python3 shannon.py <str_to_encode>")
-        sys.exit(1)
-
-    wiki_str = "aaaaaaaaaaaaaaabbbbbbbccccccddddddeeeeee"
-
-    input_str = sys.argv[1]
     encoder = ShannonCoding()
-    encoded = encoder.encode(wiki_str)
+    (encoded, encodings) = encoder.encode(wiki_str)
     print(f"Input str: {input_str}")
     print(f"Encoded str: {encoded}")
 
