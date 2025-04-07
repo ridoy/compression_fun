@@ -73,15 +73,24 @@ class ShannonCoding:
                 buffer = ''
         return bytes(decoded)
 
-if __name__ == "__main__":
-    input_size = 1000
+def compute_entropy(data: bytes) -> float:
+    probs = [data.count(b) / len(data) for b in set(data)]
+    entropy = 0.0
+    for p in probs:
+        entropy -= p * math.log2(p)
+    return entropy
+
+def rand_input(input_size: int = 1000) -> bytes:
     allowed = [ord('a'), ord('b'), ord('c')]
-    input_bytes = bytes(random.choice(allowed) for _ in range(input_size)) 
+    return bytes(random.choice(allowed) for _ in range(input_size)) 
+
+if __name__ == "__main__":
+    input_bytes = sys.argv[1].encode('utf-8') if len(sys.argv) > 1 else rand_input()
     encoder = ShannonCoding()
     (encoded, padding, decodings) = encoder.encode(input_bytes)
     decoded = encoder.decode(encoded, padding, decodings)
-    print(f"Input length={len(input_bytes)} entropy={}")
-    print(f"Encoded bytes: {len(encoded)}")
-    print(f"Decoded bytes: {len(decoded)}")
+    print(f"Input length={len(input_bytes)} entropy={compute_entropy(input_bytes)}")
+    print(f"Encoded length={len(encoded)} entropy={compute_entropy(encoded)}")
+    print(f"Decoded length={len(decoded)} entropy={compute_entropy(decoded)}")
     print(f"input_bytes == decoded: {input_bytes == decoded}")
 
