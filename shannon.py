@@ -3,6 +3,7 @@ import math
 import sys
 import random
 from dataclasses import dataclass
+from helpers import rand_input, compute_entropy, FormatConverter
 
 @dataclass
 class Symbol:
@@ -14,26 +15,6 @@ class Symbol:
     cumprob: float | None = None
     codeword: str | None = None
 
-class FormatConverter:
-    @staticmethod
-    def bits_to_bytes(bitstr: str) -> tuple[bytes,int]:
-        padding = ((8 - len(bitstr) % 8) % 8)
-        padded = bitstr + '0' * padding
-        return int(padded, 2).to_bytes(len(padded) // 8, byteorder='big'), padding
-    @staticmethod
-    def bytes_to_bits(b: bytes, padding: int) -> str:
-        bitstr = ''.join(f'{byte:08b}' for byte in b)
-        return bitstr[:len(bitstr) - padding] if padding else bitstr
-    @staticmethod
-    def dec_to_bin(x: float, bits: int) -> str:
-        result = ''
-        while bits > 0:
-            x *= 2
-            bit = int(x)
-            result += str(bit)
-            x -= bit
-            bits -= 1
-        return result
 
 class ShannonCoding:
     def _compute_probs(self, symbols: dict[int,Symbol]) -> None:
@@ -53,17 +34,7 @@ class ShannonCoding:
             symbol.codeword = FormatConverter.dec_to_bin(symbol.cumprob, symbol.codeword_length)
     def _encode(self, src: bytes, symbols: dict[str,Symbol]) -> tuple[bytes,int]:
         return FormatConverter.bits_to_bytes("".join([symbols[b].codeword for b in src]))
-    def encode(self, src: bytes) -> tuple[bytes,int,dict[str, str]]:
-        symbols = { b: Symbol(byte=b, count=src.count(b), num_bytes=len(src)) for b in set(src) }
-        self._compute_probs(symbols)
-        self._compute_codeword_lengths(symbols)
-        self._compute_cumprob(symbols)
-        self._compute_encodings(symbols)
-        encoded, padding = self._encode(src, symbols)
-        decodings = { symbol.codeword: symbol.byte for symbol in symbols.values()}
-        return (encoded, padding, decodings)
-    def decode(self, b: bytes, padding: int, decodings: dict[str,str]) -> str:
-        bitstr = FormatConverter.bytes_to_bits(b, padding)
+    def _decode(self, bitstr: str, decodings: dict[str,int]) -> bytes:
         decoded = []
         buffer = ''
         for bit in bitstr:
@@ -72,17 +43,18 @@ class ShannonCoding:
                 decoded.append(decodings[buffer])
                 buffer = ''
         return bytes(decoded)
-
-def compute_entropy(data: bytes) -> float:
-    probs = [data.count(b) / len(data) for b in set(data)]
-    entropy = 0.0
-    for p in probs:
-        entropy -= p * math.log2(p)
-    return entropy
-
-def rand_input(input_size: int = 1000) -> bytes:
-    allowed = [ord('a'), ord('b'), ord('c')]
-    return bytes(random.choice(allowed) for _ in range(input_size)) 
+    def encode(self, src: bytes) -> tuple[bytes,int,dict[str,int]]:
+        symbols = { b: Symbol(byte=b, count=src.count(b), num_bytes=len(src)) for b in set(src) }
+        self._compute_probs(symbols)
+        self._compute_codeword_lengths(symbols)
+        self._compute_cumprob(symbols)
+        self._compute_encodings(symbols)
+        encoded, padding = self._encode(src, symbols)
+        decodings = { symbol.codeword: symbol.byte for symbol in symbols.values()}
+        return (encoded, padding, decodings)
+    def decode(self, b: bytes, padding: int, decodings: dict[str,int]) -> bytes:
+        bitstr = FormatConverter.bytes_to_bits(b, padding)
+        return self._decode(bitstr, decodings)
 
 if __name__ == "__main__":
     input_bytes = sys.argv[1].encode('utf-8') if len(sys.argv) > 1 else rand_input()
