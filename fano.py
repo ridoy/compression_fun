@@ -12,21 +12,18 @@ class Symbol:
 
 class FanoCoding:
     def _partition(self, symbols: list[Symbol], lo: int, hi: int) -> None:
+        if hi - lo <= 1: return
         if hi - lo == 2:
             symbols[lo].codeword += '0'
             symbols[lo+1].codeword += '1'
             return
-        if hi - lo <= 1: return
         total = sum([s.p for i,s in enumerate(symbols) if i >= lo and i < hi])
-        left_sum = 0
-        right_sum = total
-        min = float('inf')
-        minidx = lo
+        left_sum, minval, minidx = 0, float('inf'), lo
+        # find index that partitions list
         for i in range(lo, hi):
             left_sum += symbols[i].p
-            right_sum = total - left_sum
-            if abs(left_sum - right_sum) < min:
-                min = abs(left_sum - right_sum)
+            if abs(2 * left_sum - total) < minval:
+                minval = abs(2 * left_sum - total) # equals difference of left and right side
                 minidx = i+1
         for i in range(lo,minidx): symbols[i].codeword += '0'
         for i in range(minidx,hi): symbols[i].codeword += '1'
