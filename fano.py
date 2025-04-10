@@ -1,3 +1,4 @@
+# Implementation of Fano coding https://en.wikipedia.org/wiki/Shannon%E2%80%93Fano_coding
 import sys
 import math
 import random

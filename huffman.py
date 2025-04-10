@@ -1,3 +1,4 @@
+# Implementation of Huffman coding https://en.wikipedia.org/wiki/Huffman_coding#Compression
 import heapq
 import sys
 from dataclasses import dataclass
@@ -15,23 +16,25 @@ class TreeNode:
     return self.count < other.count
 
 class HuffmanCoding:
-  def _encode(self, src: bytes) -> TreeNode:
-    symbols = [TreeNode(b, src.count(b), None, None) for b in set(src)]
+  def _create_tree(self, symbols: list[TreeNode]) -> TreeNode:
     heapq.heapify(symbols)
     while len(symbols) > 1:
       first, second = heapq.heappop(symbols), heapq.heappop(symbols)
       new_node = TreeNode(None, first.count + second.count, first, second)
       heapq.heappush(symbols,new_node)
-    root = heapq.heappop(symbols)
+    return heapq.heappop(symbols) # root
+  def _compute_encodings(self, node: TreeNode, encodings: dict[int,str], code: str):
+    if node.left != None: self._compute_encodings(node.left, encodings, code + "0")
+    if node.right != None: self._compute_encodings(node.right, encodings, code + "1")
+    if node.left == None and node.right == None: encodings[node.byte] = code
+  def _encode(self, src: bytes) -> TreeNode:
+    symbols = [TreeNode(b, src.count(b), None, None) for b in set(src)]
+    root = self._create_tree(symbols)
     encodings = {}
     self._compute_encodings(root, encodings, "")
     decodings = {v: k for k,v in encodings.items()}
     (encoded, padding) = FormatConverter.bits_to_bytes("".join([encodings[b] for b in src]))
     return (encoded, padding, decodings)
-  def _compute_encodings(self, node: TreeNode, encodings: dict[int,str], code: str):
-    if node.left != None: self._compute_encodings(node.left, encodings, code + "0")
-    if node.right != None: self._compute_encodings(node.right, encodings, code + "1")
-    if node.left == None and node.right == None: encodings[node.byte] = code
   def _decode(self, bitstr: str, decodings: dict[str,int]) -> bytes:
       decoded = []
       buffer = ''
