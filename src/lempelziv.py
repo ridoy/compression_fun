@@ -7,6 +7,7 @@ class LZW:
     a = 256
     
     while i < len(src) - 1:
+      a
       curr = src[i]
       next = src[i+1]
       if bytes([curr,next] not in dictionary):
