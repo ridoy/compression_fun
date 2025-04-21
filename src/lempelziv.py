@@ -1,25 +1,29 @@
+import math
+
+from helpers import FormatConverter
 
 class LZW:
   def _encode(self, src: bytes) -> tuple[bytes,int]:
-    dictionary = {}
-    i = 0
-    output = []
-    a = 256
-    
-    while i < len(src) - 1:
-      a
-      curr = src[i]
-      next = src[i+1]
-      if bytes([curr,next] not in dictionary):
-        dictionary[bytes([curr,next])] = a
-        a += 1
+    size = 256
+    dictionary = {bytes([i]): i for i in range(256)}
+    w = b""
+    codes = []
+    for byte in src:
+      wc = w + bytes([byte])
+      if wc in dictionary:
+        w = wc
       else:
-        # found a repeat
-
-      i += 1
-    return output
+        codes.append(dictionary[w])
+        dictionary[wc] = size
+        size += 1
+        w = bytes([byte])
+    if w:
+      codes.append(dictionary[w])
+    max_code = max(codes)
+    bit_width = max(9, math.ceil(math.log2(max_code + 1)))
+    bitstr = "".join([format(code, f'0{bit_width}b') for code in codes])
+    return FormatConverter.bits_to_bytes(bitstr), bit_width
 
 
   def encode(self, src: bytes) -> tuple[bytes,int]:
-    self._encode(src)
-    return (src,0)
+    return self._encode(src)
