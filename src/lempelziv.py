@@ -6,24 +6,28 @@ class LZW:
   def _encode(self, src: bytes) -> tuple[bytes,int]:
     size = 256
     dictionary = {bytes([i]): i for i in range(256)}
-    w = b""
+    curr = b""
     codes = []
     for byte in src:
-      wc = w + bytes([byte])
-      if wc in dictionary:
-        w = wc
+      if (next := curr + bytes([byte])) in dictionary:
+        curr = next
       else:
-        codes.append(dictionary[w])
-        dictionary[wc] = size
+        codes.append(dictionary[curr])
+        dictionary[curr] = size
         size += 1
-        w = bytes([byte])
-    if w:
-      codes.append(dictionary[w])
-    max_code = max(codes)
-    bit_width = max(9, math.ceil(math.log2(max_code + 1)))
-    bitstr = "".join([format(code, f'0{bit_width}b') for code in codes])
-    return FormatConverter.bits_to_bytes(bitstr), bit_width
-
+        curr = bytes([byte])
+    if curr:
+      codes.append(dictionary[curr])
+    bitwidth = max(9, math.ceil(math.log2(size + 1)))
+    bitstr = "".join([format(code, f'0{bitwidth}b') for code in codes])
+    return (bitstr, bitwidth)
 
   def encode(self, src: bytes) -> tuple[bytes,int]:
-    return self._encode(src)
+    (bitstr, bitwidth) = self._encode(src)
+    return (FormatConverter.bits_to_bytes(bitstr), bitwidth)
+
+
+if __name__ == "__main__":
+  encoder = LZW()
+  (encoded, bitwidth) = encoder.encode(b"hi")
+  print(encoded)
