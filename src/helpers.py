@@ -1,5 +1,10 @@
 import random
 import math
+import os
+
+def debug(s: str, end: str = "\n"):
+    if os.getenv("DEBUG") == "1":
+        print(s, end=end)
 
 def compute_entropy(data: bytes) -> float:
     probs = [data.count(b) / len(data) for b in set(data)]
