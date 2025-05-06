@@ -13,6 +13,9 @@ class Symbol:
 
 class FanoCoding:
     def _partition(self, symbols: list[Symbol], lo: int, hi: int) -> None:
+        if len(symbols) == 1: 
+            symbols[0].codeword = '0'
+            return
         if hi - lo <= 1: return
         if hi - lo == 2:
             symbols[lo].codeword += '0'
