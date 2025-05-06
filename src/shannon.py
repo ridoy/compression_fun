@@ -20,7 +20,7 @@ class ShannonCoding:
     def _compute_probs(self, symbols: dict[int,Symbol]) -> None:
         for symbol in symbols.values():
             symbol.prob = symbol.count / symbol.num_bytes
-    def _codeword_length(self, p: float) -> int: return math.ceil(-1 * math.log2(p))
+    def _codeword_length(self, p: float) -> int: return math.ceil(-1 * math.log2(p)) if p < 1.0 else 1
     def _compute_codeword_lengths(self, symbols: dict[int,Symbol]) -> None:
         for symbol in symbols.values():
             symbol.codeword_length = self._codeword_length(symbol.prob)
