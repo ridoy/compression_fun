@@ -1,9 +1,8 @@
 # Implementation of Fano coding https://en.wikipedia.org/wiki/Shannon%E2%80%93Fano_coding
-import sys
-import math
-import random
-from helpers import FormatConverter, rand_input, compute_entropy
 from dataclasses import dataclass
+import sys
+
+from helpers import FormatConverter, rand_input, compute_entropy
 
 @dataclass
 class Symbol:

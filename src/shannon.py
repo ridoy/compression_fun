@@ -1,8 +1,8 @@
 # Implementation of Shannon Coding https://en.wikipedia.org/wiki/Shannon_coding
+from dataclasses import dataclass
 import math
 import sys
-import random
-from dataclasses import dataclass
+
 from helpers import rand_input, compute_entropy, FormatConverter
 
 @dataclass

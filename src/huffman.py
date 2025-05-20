@@ -1,7 +1,7 @@
 # Implementation of Huffman coding https://en.wikipedia.org/wiki/Huffman_coding#Compression
+from dataclasses import dataclass
 import heapq
 import sys
-from dataclasses import dataclass
 from typing import Optional
 
 from helpers import FormatConverter, compute_entropy, rand_input

@@ -1,6 +1,6 @@
-import random
 import math
 import os
+import random
 
 def debug(s: str, end: str = "\n"):
     if os.getenv("DEBUG") == "1":
